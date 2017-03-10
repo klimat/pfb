@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>snapshot_profitbricks_CALL disks</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash
+
+#Снапшоты дисков CALL на profitbricks.com
+
+
+#credential for profitbricks.com
+user=&quot;vadym.shpen@starwind.com&quot;
+pass=&quot;${pfbpass}&quot;
+d=`(date +%F)`
+
+     
+#CALL SYS снапшот
+
+curl --include \
+     --request POST \
+     --user &quot;$user:${pfbpass}&quot; \
+     --header &quot;Content-Type: application/x-www-form-urlencoded&quot; \
+     --data-urlencode &quot;name=DE-CALL-SYS-$d&quot; \
+	 https://api.profitbricks.com/cloudapi/v3/datacenters/090db2df-0beb-4cca-8827-228f293ee5c2/volumes/10b0a04d-a0c7-4eb7-807d-8a9b4412fe79/create-snapshot
+     
+#CALL DATA снапшот
+
+curl --include \
+     --request POST \
+     --user &quot;$user:${pfbpass}&quot; \
+     --header &quot;Content-Type: application/x-www-form-urlencoded&quot; \
+     --data-urlencode &quot;name=DE-CALL-DATA-$d&quot; \
+	 https://api.profitbricks.com/cloudapi/v3/datacenters/090db2df-0beb-4cca-8827-228f293ee5c2/volumes/9d20f285-a77f-410d-8218-f9aedd2a7ea8/create-snapshot</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.Mailer plugin="mailer@1.19">
+      <recipients>vadym.shpen@starwind.com</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers>
+    <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper>
+      <varPasswordPairs>
+        <varPasswordPair var="pfbpass" password="{AQAAABAAAAAQSwYd4Px9KGbd2SefH8ujbYETnuVEq9sNYsCRm68jDCA=}"/>
+      </varPasswordPairs>
+    </com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper>
+  </buildWrappers>
+</project>

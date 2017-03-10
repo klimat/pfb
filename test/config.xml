@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash
+
+
+
+#credential for profitbricks.com
+user=&quot;vadym.shpen@starwind.com&quot;
+pass=&quot;${pfbpass}&quot;
+d=`(date +%F)`
+
+
+#Список ID всех снапшотов сюда запишется
+#/home/klimat/snapshots/ID-snapshots.txt
+
+curl --include \
+     --request GET \
+     --user &quot;$user:${pfbpass}&quot; \
+     https://api.profitbricks.com/cloudapi/v3/snapshots/ &gt; /home/klimat/snapshots/snapshots.txt
+     
+	 grep id /home/klimat/snapshots/snapshots.txt |sed 1d | awk &apos;{print $3 }&apos; | rev | cut -c 2- | rev | rev | cut -c 2- | rev | sed -e &apos;s/^.//&apos; &gt; /home/klimat/snapshots/ID-snapshots.txt
+     rm -r /home/klimat/snapshots/snapshots.txt
+     
+     #grep id /home/klimat/snapshots/snapshots.txt |sed 1d &gt; /home/klimat/snapshots/ontyID.txt
+     #cat /home/klimat/snapshots/ontyID.txt | awk &apos;{print $3 }&apos; &gt; /home/klimat/snapshots/ID.txt
+     #rev /home/klimat/snapshots/ID.txt | cut -c 2- | rev &gt; /home/klimat/snapshots/justID.txt
+     #rev /home/klimat/snapshots/justID.txt | cut -c 2- | rev &gt; /home/klimat/snapshots/justID-1.txt
+     #sed -e &apos;s/^.//&apos; /home/klimat/snapshots/justID-1.txt  &gt; /home/klimat/snapshots/ID-snapshots.txt
+     #rm -r /home/klimat/snapshots/justID-1.txt
+     #rm -r /home/klimat/snapshots/justID.txt
+     #rm -r /home/klimat/snapshots/ID.txt
+     #rm -r /home/klimat/snapshots/ontyID.txt
+          
+          
+          
+#берем первый айди из списка и получаем имя и дату снапшота
+#в файл /home/klimat/snapshots/$name1
+id1=`(head -n 1 /home/klimat/snapshots/ID-snapshots.txt | tail -n 1)`
+  
+
+curl --include \
+     --request GET \
+     --user &quot;$user:${pfbpass}&quot; \
+     https://api.profitbricks.com/cloudapi/v3/snapshots/$id1 &gt; /home/klimat/snapshots/$id1
+     
+         
+     #приводим файл к нормальному виду
+   
+     grep name /home/klimat/snapshots/$id1 &gt; /home/klimat/snapshots/$id1.name1
+     grep createdDate /home/klimat/snapshots/$id1 &gt;&gt; /home/klimat/snapshots/$id1.name1
+     grep id /home/klimat/snapshots/$id1 &gt;&gt; /home/klimat/snapshots/$id1.name1
+     cat /home/klimat/snapshots/$id1.name1 | awk &apos;{print $3 }&apos; | rev | cut -c 2- | rev | rev | cut -c 2- | rev | sed -e &apos;s/^.//&apos; &gt; /home/klimat/snapshots/$id1
+     
+     #берем название снапшота и так же называем файл
+     name1=`(head -n 1 /home/klimat/snapshots/$id1 | tail -n 1)`
+     mv /home/klimat/snapshots/$id1 /home/klimat/snapshots/$name1
+     rm -r /home/klimat/snapshots/$id1.name1
+     #rm -r /home/klimat/snapshots/$id1
+     
+     
+     
+     #cat /home/klimat/snapshots/$id1.name1 | awk &apos;{print $3 }&apos; &gt; /home/klimat/snapshots/$id1.name2
+     #rev /home/klimat/snapshots/$id1.name2 | cut -c 2- | rev &gt; /home/klimat/snapshots/$id1.name3
+     #rev /home/klimat/snapshots/$id1.name3 | cut -c 2- | rev &gt; /home/klimat/snapshots/$id1.name4
+     #sed -e &apos;s/^.//&apos; /home/klimat/snapshots/$id1.name4 &gt; /home/klimat/snapshots/$id1.name
+     #rm -r /home/klimat/snapshots/$id1.name1
+     #rm -r /home/klimat/snapshots/$id1.name2
+     #rm -r /home/klimat/snapshots/$id1.name3
+     #rm -r /home/klimat/snapshots/$id1.name4
+     #rm -r /home/klimat/snapshots/$id1
+     </command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper>
+      <varPasswordPairs>
+        <varPasswordPair var="pfbpass" password="{AQAAABAAAAAQ3zHZTZdv1q2EySj+QD0TLjK0sWR5Fk/ZFKhg6TzF2GU=}"/>
+      </varPasswordPairs>
+    </com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper>
+  </buildWrappers>
+</project>

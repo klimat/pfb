@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>snapshot_profitbricks_SVN disks</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash
+
+#Снапшоты дисков SVN на profitbricks.com
+
+
+#credential for profitbricks.com
+user=&quot;vadym.shpen@starwind.com&quot;
+pass=&quot;${pfbpass}&quot;
+d=`(date +%F)`
+
+     
+#SVN SYS снапшот
+
+curl --include \
+     --request POST \
+     --user &quot;$user:${pfbpass}&quot; \
+     --header &quot;Content-Type: application/x-www-form-urlencoded&quot; \
+     --data-urlencode &quot;name=DE-SVN-SYS-$d&quot; \
+	 https://api.profitbricks.com/cloudapi/v3/datacenters/090db2df-0beb-4cca-8827-228f293ee5c2/volumes/a86f674d-a44a-4e87-ad23-2dc301d23af2/create-snapshot
+
+
+#SVN DATA снапшот
+
+curl --include \
+     --request POST \
+     --user &quot;$user:${pfbpass}&quot; \
+     --header &quot;Content-Type: application/x-www-form-urlencoded&quot; \
+     --data-urlencode &quot;name=DE-SVN-DATA-$d&quot; \
+	 https://api.profitbricks.com/cloudapi/v3/datacenters/090db2df-0beb-4cca-8827-228f293ee5c2/volumes/4fca8508-2a6b-4f7f-b01a-dfd53e3609d8/create-snapshot
+     
+
+#SVN FTP снапшот
+
+curl --include \
+     --request POST \
+     --user &quot;$user:${pfbpass}&quot; \
+     --header &quot;Content-Type: application/x-www-form-urlencoded&quot; \
+     --data-urlencode &quot;name=DE-SVN-FTP-$d&quot; \
+	 https://api.profitbricks.com/cloudapi/v3/datacenters/090db2df-0beb-4cca-8827-228f293ee5c2/volumes/04fcef9b-1bd6-47e6-8987-97c1ff2fcf12/create-snapshot
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper>
+      <varPasswordPairs>
+        <varPasswordPair var="pfbpass" password="{AQAAABAAAAAQCjX0O9OTkFfl/NutIwxGNN498D8rVvUHSEC4kec/pPc=}"/>
+      </varPasswordPairs>
+    </com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper>
+  </buildWrappers>
+</project>
