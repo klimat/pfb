@@ -22,7 +22,7 @@ user=&quot;vadym.shpen@starwind.com&quot;
 pass=&quot;${pfbpass}&quot;
 d=`(date +%F)`
 
-
+rm -r /home/klimat/snapshots/ID-snapshots.txt
 #Список ID всех снапшотов сюда запишется
 #/home/klimat/snapshots/ID-snapshots.txt
 
@@ -31,7 +31,8 @@ curl --include \
      --user &quot;$user:${pfbpass}&quot; \
      https://api.profitbricks.com/cloudapi/v3/snapshots/ &gt; /home/klimat/snapshots/snapshots.txt
      
-	 grep id /home/klimat/snapshots/snapshots.txt |sed 1d | awk &apos;{print $3 }&apos; | rev | cut -c 2- | rev | rev | cut -c 2- | rev | sed -e &apos;s/^.//&apos; &gt; /home/klimat/snapshots/ID-snapshots.txt
+	 grep id /home/klimat/snapshots/snapshots.txt |sed 1d | awk &apos;{print $3 }&apos; | rev | cut -c 2- | rev | rev | cut -c 2- | rev | \
+     sed -e &apos;s/^.//&apos; &gt; /home/klimat/snapshots/ID-snapshots.txt
      rm -r /home/klimat/snapshots/snapshots.txt
      
      #grep id /home/klimat/snapshots/snapshots.txt |sed 1d &gt; /home/klimat/snapshots/ontyID.txt
@@ -46,8 +47,10 @@ curl --include \
           
           
           
-#получаем имена снапшотов, а не айди
+#получаем файл каждого снапшота с датой именем и айди в отдельную папку
 
+rm -r /home/klimat/snapshots/name/*
+rm -r /home/klimat/snapshots/names/*
 vars=`cat /home/klimat/snapshots/ID-snapshots.txt`
 for i in $vars;
 
@@ -56,32 +59,27 @@ do
 curl --include \
      --request GET \
      --user &quot;$user:${pfbpass}&quot; \
-     https://api.profitbricks.com/cloudapi/v3/snapshots/$i &gt; /home/klimat/snapshots/$i
+     https://api.profitbricks.com/cloudapi/v3/snapshots/$i &gt; /home/klimat/snapshots/name/$i
      
      #приводим файл к нормальному виду
    
-     grep name /home/klimat/snapshots/$i &gt; /home/klimat/snapshots/$i.name1
-     grep createdDate /home/klimat/snapshots/$i &gt;&gt; /home/klimat/snapshots/$i.name1
-     grep id /home/klimat/snapshots/$i &gt;&gt; /home/klimat/snapshots/$i.name1
-     cat /home/klimat/snapshots/$i.name1 | awk &apos;{print $3 }&apos; | rev | cut -c 2- | rev | rev | cut -c 2- | rev | sed -e &apos;s/^.//&apos; &gt; /home/klimat/snapshots/$i
+     grep name /home/klimat/snapshots/name/$i &gt; /home/klimat/snapshots/name/$i.name1
+     grep createdDate /home/klimat/snapshots/name/$i &gt;&gt; /home/klimat/snapshots/name/$i.name1
+     grep id /home/klimat/snapshots/name/$i &gt;&gt; /home/klimat/snapshots/name/$i.name1
+     cat /home/klimat/snapshots/name/$i.name1 | awk &apos;{print $3 }&apos; | rev | cut -c 2- | rev | rev | cut -c 2- | rev | sed -e &apos;s/^.//&apos; \
+     &gt; /home/klimat/snapshots/name/$i
      
      #берем название снапшота и так же называем файл
-     name1=`(head -n 1 /home/klimat/snapshots/$i | tail -n 1)`
-     mv /home/klimat/snapshots/$i /home/klimat/snapshots/$name1
-     rm -r /home/klimat/snapshots/$id1.name1
+     name1=`(head -n 1 /home/klimat/snapshots/name/$i | tail -n 1)`
+     cp /home/klimat/snapshots/name/$i /home/klimat/snapshots/names/$name1
+     ls /home/klimat/snapshots/names/ &gt; /home/klimat/snapshots/name-snapshots.txt
+     rm -r /home/klimat/snapshots/name/$i.name1
 
 done
      </command>
     </hudson.tasks.Shell>
   </builders>
-  <publishers>
-    <hudson.plugins.git.GitPublisher plugin="git@3.0.5">
-      <configVersion>2</configVersion>
-      <pushMerge>false</pushMerge>
-      <pushOnlyIfSuccess>false</pushOnlyIfSuccess>
-      <forcePush>true</forcePush>
-    </hudson.plugins.git.GitPublisher>
-  </publishers>
+  <publishers/>
   <buildWrappers>
     <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper>
       <varPasswordPairs>

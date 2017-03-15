@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash
+
+#credential for profitbricks.com
+user=&quot;vadym.shpen@starwind.com&quot;
+pass=&quot;${pfbpass}&quot;
+Dnow=`(date +%Y-%m-%dT%H:%M:%S)`
+#лимит для удаления 1 месяц или 2592000 сек
+lim=2592000
+
+rm -r /home/klimat/snapshots/ID-snapshots.txt
+#Список ID всех снапшотов сюда запишется
+#/home/klimat/snapshots/ID-snapshots.txt
+
+curl --include \
+     --request GET \
+     --user &quot;$user:${pfbpass}&quot; \
+     https://api.profitbricks.com/cloudapi/v3/snapshots/ &gt; /home/klimat/snapshots/snapshots.txt
+     
+	 grep id /home/klimat/snapshots/snapshots.txt |sed 1d | awk &apos;{print $3 }&apos; | rev | cut -c 2- | rev | rev | cut -c 2- | rev | \
+     sed -e &apos;s/^.//&apos; &gt; /home/klimat/snapshots/ID-snapshots.txt
+     rm -r /home/klimat/snapshots/snapshots.txt
+
+#получаем файл каждого снапшота с датой именем и айди в отдельную папку
+
+rm -r /home/klimat/snapshots/name/*
+vars=`cat /home/klimat/snapshots/ID-snapshots.txt`
+for i in $vars;
+
+do 
+
+curl --include \
+     --request GET \
+     --user &quot;$user:${pfbpass}&quot; \
+     https://api.profitbricks.com/cloudapi/v3/snapshots/$i &gt; /home/klimat/snapshots/name/$i
+     
+     #приводим файл к нормальному виду
+   
+     grep name /home/klimat/snapshots/name/$i &gt; /home/klimat/snapshots/name/$i.name1
+     grep createdDate /home/klimat/snapshots/name/$i &gt;&gt; /home/klimat/snapshots/name/$i.name1
+     grep id /home/klimat/snapshots/name/$i &gt;&gt; /home/klimat/snapshots/name/$i.name1
+     cat /home/klimat/snapshots/name/$i.name1 | awk &apos;{print $3 }&apos; | rev | cut -c 2- | rev | rev | cut -c 2- | rev | sed -e &apos;s/^.//&apos; \
+     &gt; /home/klimat/snapshots/name/$i
+     
+     #берем название снапшота и так же называем файл
+     #name1=`(head -n 1 /home/klimat/snapshots/name/$i | tail -n 1)`
+     #mv /home/klimat/snapshots/name/$i /home/klimat/snapshots/name/$name1
+     rm -r /home/klimat/snapshots/name/$i.name1
+
+done
+
+#ищем и удаляем старые снапшоты кроме снапшота впн1
+rm -r /home/klimat/snapshots/name/a9841b39-827f-4c02-bdac-e9a501d6c10d 
+#берем все айди снапшотов, берем дату создания и сравниваем с текущей датой
+vars=`ls /home/klimat/snapshots/name/`
+for i in $vars;
+
+do
+    Dsnp=`(head -n 2 /home/klimat/snapshots/name/$i | tail -n 1)`
+        SDIFF=$((`date -d &quot;$Dnow&quot; &apos;+%s&apos;` - `date -d &quot;$Dsnp&quot; &apos;+%s&apos;`))
+                if  [ &quot;$SDIFF&quot; -ge &quot;$lim&quot; ]
+        then
+
+        #получаем (удаляем) снапшоты старше лимита секунд, в данном случае 1 месяц или 2592000 секунд
+        curl --include --request GET --user &quot;$user:${pfbpass}&quot; https://api.profitbricks.com/cloudapi/v3/snapshots/$i
+        #curl --include --request DELETE --user &quot;$user:${pfbpass}&quot; https://api.profitbricks.com/cloudapi/v3/snapshots/$i
+
+        fi
+
+done
+
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper>
+      <varPasswordPairs>
+        <varPasswordPair var="pfbpass" password="{AQAAABAAAAAQxdjSxnsN1ND2BHCYO4jMWAdpdxwZHUcGVKcy/jqyFVc=}"/>
+      </varPasswordPairs>
+    </com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper>
+  </buildWrappers>
+</project>

@@ -3,29 +3,8 @@
   <actions/>
   <description></description>
   <keepDependencies>false</keepDependencies>
-  <properties>
-    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.26.1">
-      <projectUrl>https://github.com/klimat/pfb/</projectUrl>
-      <displayName></displayName>
-    </com.coravy.hudson.plugins.github.GithubProjectProperty>
-  </properties>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.1.0">
-    <configVersion>2</configVersion>
-    <userRemoteConfigs>
-      <hudson.plugins.git.UserRemoteConfig>
-        <url>https://github.com/klimat/pfb</url>
-        <credentialsId>d3521c18-76b7-458a-84a0-5a9b933060ec</credentialsId>
-      </hudson.plugins.git.UserRemoteConfig>
-    </userRemoteConfigs>
-    <branches>
-      <hudson.plugins.git.BranchSpec>
-        <name>*/master</name>
-      </hudson.plugins.git.BranchSpec>
-    </branches>
-    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
-    <submoduleCfg class="list"/>
-    <extensions/>
-  </scm>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
   <canRoam>true</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
@@ -44,28 +23,21 @@ pass=&quot;${pfbpass}&quot;
 d=`(date +%F)`
 
 
-
+#листинг для дата центра в Германии с айди 090db2df-0beb-4cca-8827-228f293ee5c2
 curl --include \
      --request GET \
      --user &quot;$user:${pfbpass}&quot; \
-     https://api.profitbricks.com/cloudapi/v3/datacenters/090db2df-0beb-4cca-8827-228f293ee5c2/volumes &gt; /home/klimat/snapshots/list_volumes_profitbriks
-     </command>
+     https://api.profitbricks.com/cloudapi/v3/datacenters/090db2df-0beb-4cca-8827-228f293ee5c2/volumes
+     
+     
+#листинг для дата центра в США с айди afca7ca3-1a09-41ef-b979-e50bf78c9efa
+curl --include \
+     --request GET \
+     --user &quot;$user:${pfbpass}&quot; \
+     https://api.profitbricks.com/cloudapi/v3/datacenters/afca7ca3-1a09-41ef-b979-e50bf78c9efa/volumes</command>
     </hudson.tasks.Shell>
-    <com.cloudbees.jenkins.GitHubSetCommitStatusBuilder plugin="github@1.26.1">
-      <statusMessage>
-        <content></content>
-      </statusMessage>
-      <contextSource class="org.jenkinsci.plugins.github.status.sources.DefaultCommitContextSource"/>
-    </com.cloudbees.jenkins.GitHubSetCommitStatusBuilder>
   </builders>
-  <publishers>
-    <hudson.plugins.git.GitPublisher plugin="git@3.1.0">
-      <configVersion>2</configVersion>
-      <pushMerge>true</pushMerge>
-      <pushOnlyIfSuccess>true</pushOnlyIfSuccess>
-      <forcePush>true</forcePush>
-    </hudson.plugins.git.GitPublisher>
-  </publishers>
+  <publishers/>
   <buildWrappers>
     <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper>
       <varPasswordPairs>
