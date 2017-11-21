@@ -1,0 +1,71 @@
+#!/bin/bash
+
+#credential for profitbricks.com
+user="vadym.shpen@starwind.com"
+pass="${pfbpass}"
+Dnow=`(date +%Y-%m-%dT%H:%M:%S)`
+
+
+rm -r /var/lib/jenkins/snapshots/pas/ID-snapshots.txt
+#Список ID всех снапшотов сюда запишется
+#/var/lib/jenkins/snapshots/ID-snapshots.txt
+
+curl --include \
+     --request GET \
+     --user "$user:${pfbpass}" \
+     https://api.profitbricks.com/cloudapi/v3/snapshots/ > /var/lib/jenkins/snapshots/pas/snapshots.txt
+     
+	 grep id /var/lib/jenkins/snapshots/pas/snapshots.txt |sed 1d | awk '{print $3 }' | rev | cut -c 2- | rev | rev | cut -c 2- | rev | \
+     sed -e 's/^.//' > /var/lib/jenkins/snapshots/pas/ID-snapshots.txt
+     rm -r /var/lib/jenkins/snapshots/pas/snapshots.txt
+
+#получаем файл каждого снапшота с датой именем и айди в отдельную папку
+
+rm -r /var/lib/jenkins/snapshots/pas/name/*
+vars=`cat /var/lib/jenkins/snapshots/pas/ID-snapshots.txt`
+for i in $vars;
+
+do 
+
+curl --include \
+     --request GET \
+     --user "$user:${pfbpass}" \
+     https://api.profitbricks.com/cloudapi/v3/snapshots/$i > /var/lib/jenkins/snapshots/pas/name/$i
+     
+     #приводим файл к нормальному виду
+   
+     grep name /var/lib/jenkins/snapshots/pas/name/$i > /var/lib/jenkins/snapshots/pas/name/$i.name1
+     grep createdDate /var/lib/jenkins/snapshots/pas/name/$i >> /var/lib/jenkins/snapshots/pas/name/$i.name1
+     grep id /var/lib/jenkins/snapshots/pas/name/$i >> /var/lib/jenkins/snapshots/pas/name/$i.name1
+     cat /var/lib/jenkins/snapshots/pas/name/$i.name1 | awk '{print $3 }' | rev | cut -c 2- | rev | rev | cut -c 2- | rev | sed -e 's/^.//' \
+     > /var/lib/jenkins/snapshots/pas/name/$i
+     
+     #берем название снапшота и так же называем файл
+     #name1=`(head -n 1 /var/lib/jenkins/snapshots/name/$i | tail -n 1)`
+     #mv /var/lib/jenkins/snapshots/name/$i /var/lib/jenkins/snapshots/name/$name1
+     rm -r /var/lib/jenkins/snapshots/pas/name/$i.name1
+
+done
+
+#ищем и удаляем старые снапшоты сервера PAS кроме снапшота впн1
+rm -r /var/lib/jenkins/snapshots/pas/name/a9841b39-827f-4c02-bdac-e9a501d6c10d 
+#находим предыдыдущие снапшоты и удаляем
+
+name=SW-DE-PAS
+vars=`ls /var/lib/jenkins/snapshots/pas/name/`
+for i in $vars;
+
+do
+    Namesnp=`(head -n 1 /var/lib/jenkins/snapshots/pas/name/$i | tail -n 1)`
+    if  [[ $Namesnp == "$name"* ]]
+    
+        then
+        #echo del $Namesnp
+        #получаем (удаляем) предыдущие снапшоты
+        #curl --include --request GET --user "$user:${pfbpass}" https://api.profitbricks.com/cloudapi/v3/snapshots/$i
+        curl --include --request DELETE --user "$user:${pfbpass}" https://api.profitbricks.com/cloudapi/v3/snapshots/$i
+        
+    fi
+
+done
+
